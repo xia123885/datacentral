@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 数据中心巡检系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/login.css">
+    <style>
+        /* 注册页面特定样式 */
+        .register-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .register-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .register-title i {
+            font-size: 32px;
+            color: #1a237e;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .register-title h1 {
+            font-size: 24px;
+            color: #1a237e;
+            font-weight: 700;
+        }
+        
+        .register-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* 进度指示器 */
+        .progress-indicator {
+            display: flex;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+        
+        .progress-step {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #999;
+            margin-bottom: 8px;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .step-number.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .step-number.completed {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .progress-line {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            right: -50%;
+            height: 2px;
+            background: #f0f0f0;
+            z-index: 0;
+        }
+        
+        .progress-line.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        /* 表单组增强 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-label i {
+            color: #667eea;
+            width: 16px;
+            text-align: center;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        /* 密码强度指示器 */
+        .password-strength {
+            margin-top: 8px;
+        }
+        
+        .strength-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        
+        .strength-bar::after {
+            content: '';
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: #ff5252;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .strength-text {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 按钮组 */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(to right, #5a6fd8, #6a4190);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        /* 表单底部 */
+        .form-footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .form-footer p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 条款复选框 */
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .terms-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        
+        .terms-checkbox label {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+        }
+        
+        .terms-link {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .terms-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 576px) {
+            .register-card {
+                padding: 25px 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <div class="register-title">
+                    <i class="fas fa-user-plus"></i>
+                    <h1>创建账户</h1>
+                </div>
+                <p class="register-subtitle">数据中心巡检系统 - 西南石油大学</p>
+            </div>
+            
+            <div class="progress-indicator">
+                <div class="progress-step">
+                    <div class="step-number active">1</div>
+                    <div class="step-label">基本信息</div>
+                    <div class="progress-line"></div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-number">2</div>
+                    <div class="step-label">账户设置</div>
+                    <div class="progress-line"></div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-number">3</div>
+                    <div class="step-label">完成注册</div>
+                    <div class="progress-line"></div>
+                </div>
+            </div>
+            
+            <form id="registerForm" class="register-form">
+                <div class="form-group">
+                    <label for="fullname" class="form-label">
+                        <i class="fas fa-id-card"></i> 真实姓名
+                    </label>
+                    <input type="text" id="fullname" name="fullname" class="form-control" placeholder="请输入真实姓名" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="department" class="form-label">
+                        <i class="fas fa-building"></i> 所属部门
+                    </label>
+                    <input type="text" id="department" name="department" class="form-control" placeholder="请输入部门名称" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="employeeId" class="form-label">
+                        <i class="fas fa-barcode"></i> 工号/学号
+                    </label>
+                    <input type="text" id="employeeId" name="employeeId" class="form-control" placeholder="请输入工号或学号" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope"></i> 邮箱地址
+                    </label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="example@swpu.edu.cn" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone" class="form-label">
+                        <i class="fas fa-phone"></i> 手机号码
+                    </label>
+                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="13800138000" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user"></i> 用户名
+                    </label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="请输入用户名（3-20位）" minlength="3" maxlength="20" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i> 登录密码
+                    </label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="请输入密码（至少8位）" minlength="8" required>
+                    <div class="password-strength">
+                        <div class="strength-bar"></div>
+                        <div class="strength-text">密码强度：弱</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">
+                        <i class="fas fa-lock"></i> 确认密码
+                    </label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="请再次输入密码" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role" class="form-label">
+                        <i class="fas fa-user-tag"></i> 用户角色
+                    </label>
+                    <select id="role" name="role" class="form-control" required>
+                        <option value="">请选择角色</option>
+                        <option value="admin">管理员（系统管理、用户管理）</option>
+                        <option value="engineer">巡检工程师（执行巡检任务）</option>
+                        <option value="viewer">查看者（查看巡检记录）</option>
+                    </select>
+                </div>
+                
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                    <label for="agreeTerms">
+                        我已阅读并同意 
+                        <a href="#" class="terms-link" onclick="event.preventDefault(); alert('用户协议将在正式版本中提供')">《用户协议》</a> 
+                        和 
+                        <a href="#" class="terms-link" onclick="event.preventDefault(); alert('隐私政策将在正式版本中提供')">《隐私政策》</a>
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <a href="login.html" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> 返回登录
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> 提交注册
+                    </button>
+                </div>
+                
+                <div class="form-footer">
+                    <p>注册后需要管理员审核才能使用系统</p>
+                    <p style="margin-top: 8px; font-size: 12px; color: #888;">
+                        如有问题请联系管理员：刘保文 17828896824
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机房巡检 - 数据中心巡检管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/detail.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>数据中心巡检管理系统</h1>
+                        <p>西南石油大学 - 网络与信息化中心</p>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        夏
+                    </div>
+                    <div>
+                        <div>夏秀平</div>
+                        <div class="user-role">巡检工程师</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <a href="index.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+        
+        <div class="detail-header">
+            <h1 class="detail-title" id="room-name">机房名称</h1>
+            <div class="status-badge" id="room-current-status">未检查</div>
+        </div>
+        
+        <div class="detail-content">
+            <div class="inspection-form">
+                <h3 class="form-title">巡检记录提交</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">巡检状态</label>
+                    <div class="status-options">
+                        <div class="status-option" data-status="normal">
+                            <i class="fas fa-check-circle"></i><br>
+                            正常
+                        </div>
+                        <div class="status-option" data-status="warning">
+                            <i class="fas fa-exclamation-triangle"></i><br>
+                            警告
+                        </div>
+                        <div class="status-option" data-status="error">
+                            <i class="fas fa-times-circle"></i><br>
+                            异常
+                        </div>
+                    </div>
+                    <input type="hidden" id="inspection-status" value="">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">巡检备注</label>
+                    <textarea class="form-control" id="inspection-notes" rows="4" placeholder="请输入巡检备注..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">上传照片/截图</label>
+                    <div class="file-upload" id="file-upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>点击或拖拽上传照片</p>
+                        <p class="upload-hint">支持 JPG, PNG 格式，最大 5MB</p>
+                        <input type="file" id="file-input" accept="image/*" multiple style="display: none;">
+                    </div>
+                    <div class="uploaded-images" id="uploaded-images">
+                        <!-- 上传的图片会显示在这里 -->
+                    </div>
+                </div>
+                
+                <button class="submit-btn" id="submit-inspection">
+                    <i class="fas fa-paper-plane"></i> 提交巡检记录
+                </button>
+            </div>
+            
+            <div class="inspection-history">
+                <h3 class="history-title">巡检历史记录</h3>
+                <div id="history-list">
+                    <!-- 历史记录会显示在这里 -->
+                    <div class="empty-history" id="empty-history">
+                        <i class="fas fa-history"></i>
+                        <p>暂无巡检记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片预览模态框 -->
+    <div class="image-modal" id="image-modal">
+        <span class="modal-close" id="modal-close">&times;</span>
+        <img class="modal-image" id="modal-image" src="" alt="预览图片">
+    </div>
+
+    <script src="../js/detail.js"></script>
+</body>
+</html>
