@@ -166,13 +166,6 @@ class AuthSystem {
                     name: '陈睿曦',
                     email: 'engineer@swpu.edu.cn',
                     phone: '13900139000'
-                },
-                'viewer': { 
-                    password: 'password123', 
-                    role: 'viewer', 
-                    name: '张馨',
-                    email: 'viewer@swpu.edu.cn',
-                    phone: '13700137000'
                 }
             };
             

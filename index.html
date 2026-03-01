@@ -182,6 +182,21 @@
                         <div class="device-item">全闪存储</div>
                         <div class="device-item">其它</div>
                     </div>
+                    <div class="card-title" style="margin-top: 25px;">
+                        <i class="fas fa-book"></i>
+                        <h2>支持与帮助</h2>
+                    </div>
+                    <div class="management-list">
+                        <div class="management-item" id="btn-knowledge-base" style="cursor: pointer;">
+                            <i class="fas fa-book-open" style="margin-right: 8px; color: #667eea;"></i> 故障知识库
+                        </div>
+                        <div class="management-item" id="btn-my-history" style="cursor: pointer;">
+                            <i class="fas fa-history" style="margin-right: 8px; color: #667eea;"></i> 我的巡检历史
+                        </div>
+                        <div class="management-item" id="btn-device-docs" style="cursor: pointer;">
+                            <i class="fas fa-file-alt" style="margin-right: 8px; color: #667eea;"></i> 设备文档查询
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card">
@@ -259,6 +274,185 @@
             <p class="tech-stack">采用Vue + Spring Boot技术栈开发</p>
         </footer>
     </div>
+    <!-- 管理后台入口按钮 -->
+    <div class="admin-entry" style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
+        <a href="admin.html" class="btn btn-primary"
+            style="border-radius: 50px; padding: 12px 25px; box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);">
+            <i class="fas fa-cog"></i> 管理后台
+        </a>
+    </div>
+    <!-- 知识库模态框 -->
+    <div id="knowledgeModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>故障知识库</h3>
+                <button class="close-btn"
+                    onclick="document.getElementById('knowledgeModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box" style="margin-bottom: 20px;">
+                    <input type="text" id="knowledgeSearch" placeholder="搜索故障、解决方案..." class="form-control"
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div id="knowledgeList" class="knowledge-list">
+                    <!-- 知识列表由JS生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 历史记录模态框 -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>我的巡检历史</h3>
+                <button class="close-btn"
+                    onclick="document.getElementById('historyModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="myHistoryList" class="history-list">
+                    <!-- 历史列表由JS生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设备文档模态框 -->
+    <div id="deviceDocsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>设备文档查询</h3>
+                <button class="close-btn"
+                    onclick="document.getElementById('deviceDocsModal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box" style="margin-bottom: 20px;">
+                    <input type="text" id="deviceDocsSearch" placeholder="搜索文档名称、设备类型..." class="form-control"
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div id="deviceDocsList" class="knowledge-list">
+                    <!-- 文档列表由JS生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        /* 知识库列表样式 */
+        .knowledge-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .knowledge-item:last-child {
+            border-bottom: none;
+        }
+
+        .knowledge-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .knowledge-meta {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .knowledge-solution {
+            color: #555;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-right: 5px;
+        }
+
+        /* 历史记录样式 */
+        .history-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: white;
+        }
+
+        .status-normal {
+            background: #4CAF50;
+        }
+
+        .status-warning {
+            background: #FF9800;
+        }
+
+        .status-error {
+            background: #F44336;
+        }
+    </style>
 
     <script src="js/main.js"></script>
 </body>
