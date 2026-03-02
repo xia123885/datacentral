@@ -1,17 +1,78 @@
 // 数据中心巡检系统 - 主页面逻辑
 class InspectionMainSystem {
     constructor() {
-        this.rooms = [
-            { id: 'room-1', name: '明理楼8210', type: '机房', status: 'unchecked', location: '明理楼8楼', lastInspection: null },
-            { id: 'room-2', name: '明理楼8211', type: '机房', status: 'unchecked', location: '明理楼8楼', lastInspection: null },
-            { id: 'room-3', name: '明理楼8108', type: '机房', status: 'unchecked', location: '明理楼8楼', lastInspection: null },
-            { id: 'room-4', name: '明理楼8112', type: 'UPS机房', status: 'unchecked', location: '明理楼8楼', lastInspection: null },
-            { id: 'room-5', name: '明理楼8110', type: 'UPS机房', status: 'unchecked', location: '明理楼8楼', lastInspection: null }
-        ];
-
+        this.rooms = this.getDefaultRooms();
         this.inspectionHistory = {};
         this.currentUser = null;
         this.init();
+    }
+
+    getDefaultRooms() {
+        return [
+            {
+                id: 'room-1',
+                name: '明理楼8210',
+                type: '机房',
+                status: 'unchecked',
+                location: '明理楼8楼',
+                lastInspection: null,
+                description: `
+                    <div class="guide-content">
+                        <h4>ORACLE RAC</h4>
+                        <p><strong>IP:</strong> 192.168.21.101</p>
+                        <p><strong>IP:</strong> 172.27.155.2</p>
+                        <div class="code-block">命令: sudo cat /home/grid/log/checkrac.log</div>
+                        <div class="code-block">命令: sudo cat /home/oracle/shell/log/diskcheck.log</div>
+                        <p>172.27.155.2需要额外执行查看磁盘剩余容量的命令: <code>sudo su; su - grid; asmcmd lsdg</code></p>
+                        <p class="text-danger">检查时注意Free_MB的数值（OCRVDISK不用管），低于10万级就进行清理，参考idcfaq中的查看《归档空间及清理归档日志2》进行归档日志清理</p>
+                        <p class="text-warning">数据库PDB swpudb上四个数据库GBF2、SJMHDB、GXSJDB、FWMHDB 暂时关闭半年（至2025年5月）</p>
+                    </div>
+                `
+            },
+            {
+                id: 'room-2',
+                name: '明理楼8211',
+                type: '机房',
+                status: 'unchecked',
+                location: '明理楼8楼',
+                lastInspection: null,
+                description: `
+                    <div class="guide-content">
+                        <h4>NetApp 存储检查</h4>
+                        <p><strong>管理IP:</strong> 192.168.21.200</p>
+                        <div class="code-block">命令: sysstat -x 1</div>
+                        <p>检查存储控制器状态，确认所有LUN路径正常。</p>
+                    </div>
+                `
+            },
+            {
+                id: 'room-3',
+                name: '明理楼8108',
+                type: '机房',
+                status: 'unchecked',
+                location: '明理楼8楼',
+                lastInspection: null,
+                description: '<p>常规巡检，注意空调温度和湿度。</p>'
+            },
+            {
+                id: 'room-4',
+                name: '明理楼8112',
+                type: 'UPS机房',
+                status: 'unchecked',
+                location: '明理楼8楼',
+                lastInspection: null,
+                description: '<p>检查UPS电池组电压，确认无漏液现象。</p>'
+            },
+            {
+                id: 'room-5',
+                name: '明理楼8110',
+                type: 'UPS机房',
+                status: 'unchecked',
+                location: '明理楼8楼',
+                lastInspection: null,
+                description: '<p>检查UPS主机面板显示，确认负载率在正常范围。</p>'
+            }
+        ];
     }
 
     init() {
@@ -210,13 +271,20 @@ class InspectionMainSystem {
         if (savedRooms) {
             try {
                 const saved = JSON.parse(savedRooms);
-                // 只更新状态，保留其他属性
-                this.rooms.forEach(room => {
-                    const savedRoom = saved.find(r => r.id === room.id);
+                // 合并存储的状态和默认的描述信息
+                this.rooms = this.rooms.map(defaultRoom => {
+                    const savedRoom = saved.find(r => r.id === defaultRoom.id);
                     if (savedRoom) {
-                        room.status = savedRoom.status;
-                        room.lastInspection = savedRoom.lastInspection;
+                        return {
+                            ...defaultRoom,
+                            status: savedRoom.status,
+                            lastInspection: savedRoom.lastInspection,
+                            // 如果存储中有描述且被修改过，可以使用存储的，这里优先使用默认的（模拟更新）
+                            // 实际项目中可能需要更复杂的合并策略
+                            description: savedRoom.description || defaultRoom.description
+                        };
                     }
+                    return defaultRoom;
                 });
             } catch (e) {
                 // 解析失败，使用默认数据
@@ -365,14 +433,14 @@ class InspectionMainSystem {
 
         activitiesContainer.innerHTML = '';
 
-        // 收集今天的所有巡检记录
+        // 收集今天的所有“非正常”巡检记录（警告/异常）
         const today = new Date().toDateString();
         let todayActivities = [];
 
         for (const roomId in this.inspectionHistory) {
             if (this.inspectionHistory[roomId]) {
                 this.inspectionHistory[roomId].forEach(record => {
-                    if (new Date(record.timestamp).toDateString() === today) {
+                    if (new Date(record.timestamp).toDateString() === today && (record.status === 'warning' || record.status === 'error')) {
                         todayActivities.push({
                             roomId,
                             roomName: this.getRoomNameById(roomId),
@@ -393,11 +461,11 @@ class InspectionMainSystem {
             activitiesContainer.innerHTML = `
                 <li class="activity-item">
                     <div class="activity-icon empty">
-                        <i class="far fa-calendar"></i>
+                        <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="activity-details">
-                        <div class="activity-title">今日暂无巡检记录</div>
-                        <div class="activity-desc">开始今天的巡检工作吧！</div>
+                        <div class="activity-title">今日暂无警告/异常</div>
+                        <div class="activity-desc">所有巡检均正常</div>
                     </div>
                 </li>
             `;
@@ -430,7 +498,7 @@ class InspectionMainSystem {
                 </div>
                 <div class="activity-details">
                     <div class="activity-title">${activity.roomName} - ${this.getStatusText(activity.status)}</div>
-                    <div class="activity-desc">${activity.inspector || '系统'}</div>
+                    <div class="activity-desc">巡检员: ${activity.inspector || '系统'}</div>
                     <div class="activity-time">${timeStr}</div>
                 </div>
             `;

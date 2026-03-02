@@ -1,12 +1,84 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>机房巡检 - 数据中心巡检管理系统</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/detail.css">
+    <style>
+        .room-guide-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .guide-header {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .guide-header i {
+            color: #3949ab;
+        }
+
+        .guide-body {
+            padding: 20px;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .guide-body h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+            border-left: 4px solid #3949ab;
+            padding-left: 10px;
+        }
+
+        .guide-body p {
+            margin-bottom: 10px;
+        }
+
+        .guide-body .code-block {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            color: #d32f2f;
+        }
+
+        .guide-body code {
+            background: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #d32f2f;
+        }
+
+        .guide-body .text-danger {
+            color: #d32f2f;
+            font-weight: 500;
+        }
+
+        .guide-body .text-warning {
+            color: #f57c00;
+            font-weight: 500;
+        }
+    </style>
 </head>
+
 <body>
     <header>
         <div class="container">
@@ -32,21 +104,31 @@
             </div>
         </div>
     </header>
-    
+
     <div class="container">
         <a href="index.html" class="back-button">
             <i class="fas fa-arrow-left"></i> 返回列表
         </a>
-        
+
         <div class="detail-header">
             <h1 class="detail-title" id="room-name">机房名称</h1>
             <div class="status-badge" id="room-current-status">未检查</div>
         </div>
-        
+
+        <!-- 巡检指南/设备信息区域 -->
+        <div class="room-guide-card" id="room-guide-container" style="display: none;">
+            <div class="guide-header">
+                <i class="fas fa-info-circle"></i> 巡检指南 & 设备信息
+            </div>
+            <div class="guide-body" id="room-guide-content">
+                <!-- 富文本内容将在这里渲染 -->
+            </div>
+        </div>
+
         <div class="detail-content">
             <div class="inspection-form">
                 <h3 class="form-title">巡检记录提交</h3>
-                
+
                 <div class="form-group">
                     <label class="form-label">巡检状态</label>
                     <div class="status-options">
@@ -65,12 +147,49 @@
                     </div>
                     <input type="hidden" id="inspection-status" value="">
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">巡检备注</label>
                     <textarea class="form-control" id="inspection-notes" rows="4" placeholder="请输入巡检备注..."></textarea>
                 </div>
-                
+
+                <div class="form-group">
+                    <label class="form-label">富文本说明</label>
+                    <div id="rt-toolbar" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+                        <button type="button" class="rt-btn" data-cmd="bold" title="加粗"
+                            style="padding:6px 10px;">B</button>
+                        <button type="button" class="rt-btn" data-cmd="italic" title="斜体"
+                            style="padding:6px 10px;">I</button>
+                        <button type="button" class="rt-btn" data-cmd="underline" title="下划线"
+                            style="padding:6px 10px;">U</button>
+                        <button type="button" class="rt-btn" data-cmd="insertUnorderedList" title="无序列表"
+                            style="padding:6px 10px;"><i class="fas fa-list-ul"></i></button>
+                        <button type="button" class="rt-btn" data-cmd="insertOrderedList" title="有序列表"
+                            style="padding:6px 10px;"><i class="fas fa-list-ol"></i></button>
+                        <button type="button" id="rt-code" title="代码块" style="padding:6px 10px;"><i
+                                class="fas fa-code"></i></button>
+                        <button type="button" id="rt-link" title="插入链接" style="padding:6px 10px;"><i
+                                class="fas fa-link"></i></button>
+                        <div style="position:relative;">
+                            <button type="button" id="insert-doc-btn" title="插入设备文档" style="padding:6px 10px;"><i
+                                    class="fas fa-file-alt"></i></button>
+                            <div id="doc-picker"
+                                style="display:none; position:absolute; top:36px; left:0; background:#fff; border:1px solid #ddd; border-radius:6px; width:260px; max-height:220px; overflow:auto; box-shadow:0 6px 18px rgba(0,0,0,.12); z-index:10;">
+                                <div class="doc-item" data-title="IBM刀片服务器维护手册.pdf"
+                                    style="padding:8px 12px; cursor:pointer;">IBM刀片服务器维护手册.pdf</div>
+                                <div class="doc-item" data-title="NetApp存储配置指南.docx"
+                                    style="padding:8px 12px; cursor:pointer;">NetApp存储配置指南.docx</div>
+                                <div class="doc-item" data-title="设备巡检清单模板.xlsx"
+                                    style="padding:8px 12px; cursor:pointer;">设备巡检清单模板.xlsx</div>
+                                <div class="doc-item" data-title="UPS日常维护操作规范.pdf"
+                                    style="padding:8px 12px; cursor:pointer;">UPS日常维护操作规范.pdf</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="rich-editor" contenteditable="true" class="form-control"
+                        style="min-height:140px; padding:10px; overflow:auto;"></div>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">上传照片/截图</label>
                     <div class="file-upload" id="file-upload-area">
@@ -83,12 +202,12 @@
                         <!-- 上传的图片会显示在这里 -->
                     </div>
                 </div>
-                
+
                 <button class="submit-btn" id="submit-inspection">
                     <i class="fas fa-paper-plane"></i> 提交巡检记录
                 </button>
             </div>
-            
+
             <div class="inspection-history">
                 <h3 class="history-title">巡检历史记录</h3>
                 <div id="history-list">
@@ -110,4 +229,5 @@
 
     <script src="js/detail.js"></script>
 </body>
+
 </html>

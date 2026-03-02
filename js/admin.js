@@ -136,11 +136,74 @@ class AdminSystem {
 
     getDefaultRooms() {
         return [
-            { id: 'room-1', name: '明理楼8210', type: '机房', status: 'normal', location: '明理楼8楼', lastInspection: '2025-11-28T10:30:00.000Z', nextInspection: '2025-11-29T10:30:00.000Z' },
-            { id: 'room-2', name: '明理楼8211', type: '机房', status: 'normal', location: '明理楼8楼', lastInspection: '2025-11-28T09:45:00.000Z', nextInspection: '2025-11-29T09:45:00.000Z' },
-            { id: 'room-3', name: '明理楼8108', type: '机房', status: 'warning', location: '明理楼8楼', lastInspection: '2025-11-28T08:20:00.000Z', nextInspection: '2025-11-28T14:20:00.000Z' },
-            { id: 'room-4', name: '明理楼8112', type: 'UPS机房', status: 'normal', location: '明理楼8楼', lastInspection: '2025-11-27T15:30:00.000Z', nextInspection: '2025-11-28T15:30:00.000Z' },
-            { id: 'room-5', name: '明理楼8110', type: 'UPS机房', status: 'unchecked', location: '明理楼8楼', lastInspection: null, nextInspection: '2025-11-28T16:00:00.000Z' }
+            {
+                id: 'room-1',
+                name: '明理楼8210',
+                type: '机房',
+                status: 'normal',
+                location: '明理楼8楼',
+                lastInspection: '2025-11-28T10:30:00.000Z',
+                nextInspection: '2025-11-29T10:30:00.000Z',
+                description: `
+                    <div class="guide-content">
+                        <h4>ORACLE RAC</h4>
+                        <p><strong>IP:</strong> 192.168.21.101</p>
+                        <p><strong>IP:</strong> 172.27.155.2</p>
+                        <div class="code-block">命令: sudo cat /home/grid/log/checkrac.log</div>
+                        <div class="code-block">命令: sudo cat /home/oracle/shell/log/diskcheck.log</div>
+                        <p>172.27.155.2需要额外执行查看磁盘剩余容量的命令: <code>sudo su; su - grid; asmcmd lsdg</code></p>
+                        <p class="text-danger">检查时注意Free_MB的数值（OCRVDISK不用管），低于10万级就进行清理，参考idcfaq中的查看《归档空间及清理归档日志2》进行归档日志清理</p>
+                        <p class="text-warning">数据库PDB swpudb上四个数据库GBF2、SJMHDB、GXSJDB、FWMHDB 暂时关闭半年（至2025年5月）</p>
+                    </div>
+                `
+            },
+            {
+                id: 'room-2',
+                name: '明理楼8211',
+                type: '机房',
+                status: 'normal',
+                location: '明理楼8楼',
+                lastInspection: '2025-11-28T09:45:00.000Z',
+                nextInspection: '2025-11-29T09:45:00.000Z',
+                description: `
+                    <div class="guide-content">
+                        <h4>NetApp 存储检查</h4>
+                        <p><strong>管理IP:</strong> 192.168.21.200</p>
+                        <div class="code-block">命令: sysstat -x 1</div>
+                        <p>检查存储控制器状态，确认所有LUN路径正常。</p>
+                    </div>
+                `
+            },
+            {
+                id: 'room-3',
+                name: '明理楼8108',
+                type: '机房',
+                status: 'warning',
+                location: '明理楼8楼',
+                lastInspection: '2025-11-28T08:20:00.000Z',
+                nextInspection: '2025-11-28T14:20:00.000Z',
+                description: '<p>常规巡检，注意空调温度和湿度。</p>'
+            },
+            {
+                id: 'room-4',
+                name: '明理楼8112',
+                type: 'UPS机房',
+                status: 'normal',
+                location: '明理楼8楼',
+                lastInspection: '2025-11-27T15:30:00.000Z',
+                nextInspection: '2025-11-28T15:30:00.000Z',
+                description: '<p>检查UPS电池组电压，确认无漏液现象。</p>'
+            },
+            {
+                id: 'room-5',
+                name: '明理楼8110',
+                type: 'UPS机房',
+                status: 'unchecked',
+                location: '明理楼8楼',
+                lastInspection: null,
+                nextInspection: '2025-11-28T16:00:00.000Z',
+                description: '<p>检查UPS主机面板显示，确认负载率在正常范围。</p>'
+            }
         ];
     }
 
@@ -1458,35 +1521,54 @@ class AdminSystem {
         });
     }
 
-    openRoomModal() {
+    openRoomModal(roomId = null) {
         const modal = document.getElementById('roomModal');
         const body = modal.querySelector('.modal-body');
 
+        const room = roomId ? this.rooms.find(r => r.id === roomId) : null;
+
         body.innerHTML = `
             <form id="roomForm">
+                <input type="hidden" id="roomId" value="${roomId || ''}">
                 <div class="form-group">
                     <label class="form-label">机房名称</label>
-                    <input type="text" class="form-control" placeholder="例如: 明理楼8210" required>
+                    <input type="text" id="roomName" class="form-control" placeholder="例如: 明理楼8210" value="${room ? room.name : ''}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">类型</label>
-                    <select class="form-control" required>
-                        <option value="机房">机房</option>
-                        <option value="UPS机房">UPS机房</option>
+                    <select id="roomType" class="form-control" required>
+                        <option value="机房" ${room && room.type === '机房' ? 'selected' : ''}>机房</option>
+                        <option value="UPS机房" ${room && room.type === 'UPS机房' ? 'selected' : ''}>UPS机房</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">位置</label>
-                    <input type="text" class="form-control" placeholder="例如: 明理楼8楼" required>
+                    <input type="text" id="roomLocation" class="form-control" placeholder="例如: 明理楼8楼" value="${room ? room.location : ''}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">初始状态</label>
-                    <select class="form-control" required>
-                        <option value="unchecked">未检查</option>
-                        <option value="normal">正常</option>
-                        <option value="warning">警告</option>
-                        <option value="error">异常</option>
+                    <select id="roomStatus" class="form-control" required>
+                        <option value="unchecked" ${room && room.status === 'unchecked' ? 'selected' : ''}>未检查</option>
+                        <option value="normal" ${room && room.status === 'normal' ? 'selected' : ''}>正常</option>
+                        <option value="warning" ${room && room.status === 'warning' ? 'selected' : ''}>警告</option>
+                        <option value="error" ${room && room.status === 'error' ? 'selected' : ''}>异常</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">巡检指南 (富文本)</label>
+                    <div class="rich-text-container" style="border: 1px solid #ddd; border-radius: 4px;">
+                        <div class="rich-text-toolbar" style="background: #f5f5f5; padding: 5px; border-bottom: 1px solid #ddd; display: flex; gap: 5px;">
+                            <button type="button" class="btn btn-sm" data-cmd="bold" title="加粗"><i class="fas fa-bold"></i></button>
+                            <button type="button" class="btn btn-sm" data-cmd="italic" title="斜体"><i class="fas fa-italic"></i></button>
+                            <button type="button" class="btn btn-sm" data-cmd="insertUnorderedList" title="列表"><i class="fas fa-list-ul"></i></button>
+                            <button type="button" class="btn btn-sm" onclick="document.execCommand('formatBlock', false, 'h4')" title="标题"><i class="fas fa-heading"></i></button>
+                            <button type="button" class="btn btn-sm" onclick="const url=prompt('输入链接');if(url)document.execCommand('createLink', false, url)" title="链接"><i class="fas fa-link"></i></button>
+                            <button type="button" class="btn btn-sm" onclick="document.execCommand('insertHTML', false, '<div class=\'code-block\'>命令: </div>')" title="插入代码块"><i class="fas fa-code"></i></button>
+                        </div>
+                        <div id="roomDescription" class="rich-text-editor" contenteditable="true" style="min-height: 150px; padding: 10px; outline: none;">
+                            ${room ? (room.description || '') : ''}
+                        </div>
+                    </div>
                 </div>
                 <div class="form-row">
                     <button type="submit" class="btn btn-primary">保存</button>
@@ -1497,12 +1579,55 @@ class AdminSystem {
 
         modal.classList.add('active');
 
+        // Toolbar events
+        body.querySelectorAll('.rich-text-toolbar button[data-cmd]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.execCommand(btn.dataset.cmd, false, null);
+            });
+        });
+
         const form = document.getElementById('roomForm');
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            this.showNotification('机房添加成功', 'success');
-            closeModal('roomModal');
+            this.saveRoom();
         });
+    }
+
+    saveRoom() {
+        const id = document.getElementById('roomId').value;
+        const name = document.getElementById('roomName').value;
+        const type = document.getElementById('roomType').value;
+        const location = document.getElementById('roomLocation').value;
+        const status = document.getElementById('roomStatus').value;
+        const description = document.getElementById('roomDescription').innerHTML;
+
+        if (id) {
+            // Edit
+            const index = this.rooms.findIndex(r => r.id === id);
+            if (index !== -1) {
+                this.rooms[index] = { ...this.rooms[index], name, type, location, status, description };
+                this.showNotification('机房信息更新成功', 'success');
+            }
+        } else {
+            // Create
+            const newRoom = {
+                id: `room-${Date.now()}`,
+                name,
+                type,
+                location,
+                status,
+                description,
+                lastInspection: null,
+                nextInspection: null
+            };
+            this.rooms.push(newRoom);
+            this.showNotification('机房添加成功', 'success');
+        }
+
+        localStorage.setItem('rooms', JSON.stringify(this.rooms));
+        closeModal('roomModal');
+        this.renderRoomManagement(document.getElementById('page-container'));
     }
 
     openTaskModal() {
@@ -1691,7 +1816,7 @@ class AdminSystem {
     }
 
     editRoom(roomId) {
-        this.showNotification(`编辑机房: ${roomId}`, 'info');
+        this.openRoomModal(roomId);
     }
 
     editDevice(deviceId) {
